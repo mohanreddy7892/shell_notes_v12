@@ -1,4 +1,3 @@
-#some code
 #!/bin/bash
 
 # Check if the input file is provided as a command-line argument
@@ -18,7 +17,7 @@ fi
 failed_file="failtochangepermission.txt"
 
 # Create an empty failtochangepermission.txt file if it doesn't exist
-touch "$failed_file"
+> "$failed_file"
 
 # Iterate over each path in the input file
 while IFS= read -r path; do
@@ -27,24 +26,27 @@ while IFS= read -r path; do
         # Get the current permissions of the path
         current_permissions=$(stat -c "%a" "$path")
 
-        # Extract the first two digits of the current permissions
-        prefix_permissions="${current_permissions%??}"
+        # Extract the first digit of the current permissions
+        last_digit=${current_permissions: -1}
 
-        # Set the new permissions by appending "4" to the prefix permissions
-        new_permissions="${prefix_permissions}4"
+        # Set the new permissions if the last digit is not already 4
+        if [ "$last_digit" != "4" ]; then
+            new_permissions="${current_permissions%?}4"
 
-        # Attempt to change the permissions of the path
-        if chmod "$new_permissions" "$path"; then
-            # Output the path and the updated permissions
-            echo "Changed permissions of $path to $new_permissions"
-        else
-            # Append the failed path and its current permission to failtochangepermission.txt file
-            echo "$path,$current_permissions" >> "$failed_file"
+            # Attempt to change the permissions of the path
+            chmod "$new_permissions" "$path"
+
+            # Check the exit status of the chmod command
+            if [ $? -eq 0 ]; then
+                # Output the path and the updated permissions
+                echo "Changed permissions of $path to $new_permissions"
+            else
+                # Append the failed path and its current permission to failtochangepermission.txt file
+                echo "$path,$current_permissions" >> "$failed_file"
+            fi
         fi
     else
         # Append the path to failtochangepermission.txt file with an indication of inaccessibility
         echo "$path,Inaccessible" >> "$failed_file"
     fi
 done < "$input_file"
-
-
