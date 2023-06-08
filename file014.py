@@ -1,4 +1,3 @@
-# some code
 import os
 import re
 import pandas as pd
@@ -17,7 +16,7 @@ for root, dirs, files in os.walk(sh_dir):
                 for line in content:
                     matches = re.findall(r'chmod (\d{3})', line)
                     if matches:
-                        count_chmod += 1
+                        count_chmod += len(matches)
                         octal_numbers.extend(matches)
                 if octal_numbers:
                     data.append([file_path, count_chmod, ','.join(octal_numbers)])
