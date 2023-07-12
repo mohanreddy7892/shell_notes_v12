@@ -1,23 +1,34 @@
-from os import system
-import sys
-import getopt
-from wsgiref.simple_server import sys_version
-import platform
-hostname = platform.uname()
-print(hostname)
-print(sys_version)
-n=len(sys.argv)
-print(f"Total  arugements passed",n)
-print("\nName of python script",sys.argv[0])
-for i in range(1,n):
-    print(sys.argv[i],end=" ")
-    
-if n == 4:
-    print("its valid parameters")
-else:
-    print("pleas pass valid arguments\nits not valid argument \nretun exit 8")
-    sys.exit(8)
-    
-    
-    
+import pandas as pd
+import re
+from pathlib import Path
+from collections import defaultdict
 
+# List of XML file paths
+xml_files = [
+    Path('path/to/file1.xml'),
+    Path('path/to/file2.xml'),
+    # add more file paths as needed...
+]
+
+# Dictionary to store files for each condition
+files_by_condition = defaultdict(list)
+
+# Extract conditions from each file and store files by condition
+for file_path in xml_files:
+    with file_path.open('r') as file:
+        xml_string = file.read()
+
+    conditions = set(re.findall(r'<INCOND NAME="(.*?)"', xml_string)) \
+                 | set(re.findall(r'<OUTCOND NAME="(.*?)"', xml_string)) \
+                 | set(re.findall(r'<CONTROL NAME="(.*?)"', xml_string)) \
+                 | set(re.findall(r'<DOCOND CONDITION="(.*?)"', xml_string))
+
+    for condition in conditions:
+        files_by_condition[condition].append(str(file_path))
+
+# Convert files_by_condition to a list of dictionaries for DataFrame
+data = [{'Condition': condition, 'Files': ', '.join(files)} for condition, files in files_by_condition.items()]
+
+# Create DataFrame and write to Excel
+df = pd.DataFrame(data)
+df.to_excel('ConditionsWithFiles.xlsx', index=False)
