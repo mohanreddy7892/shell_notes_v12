@@ -20,4 +20,4 @@ if dir_exits_check==True:
     print("Directory is exists given path",path)
 else:
     print("Directory does not exits in given path ",path)
-    sys.exit (0)
+    sys.exit (7)
